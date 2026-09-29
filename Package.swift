@@ -31,17 +31,11 @@ var swiftSettings: [SwiftSetting] {
         .enableUpcomingFeature("MemberImportVisibility"),
         .enableUpcomingFeature("InternalImportsByDefault"),
         .enableUpcomingFeature("ExistentialAny"),
-        .enableExperimentalFeature("BuiltinModule"),
-        .enableExperimentalFeature("AddressableTypes"),
-        .enableExperimentalFeature("Lifetimes"),
         .enableExperimentalFeature(
             "AvailabilityMacro=SwiftStdlib 5.1:macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0"
         ),
         .enableExperimentalFeature(
             "AvailabilityMacro=SwiftStdlib 5.3:macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0"
-        ),
-        .enableExperimentalFeature(
-            "AvailabilityMacro=SwiftStdlib 6.0:macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0"
         ),
         .enableExperimentalFeature(
             "AvailabilityMacro=SwiftStdlib 6.2:macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, visionOS 26.0"
