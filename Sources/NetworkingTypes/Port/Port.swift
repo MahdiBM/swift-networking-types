@@ -8,6 +8,7 @@ public struct Port: Sendable, Hashable, RawRepresentable {
     public let rawValue: UInt16
 
     /// Convenience accessor for the canonical rawValue.
+    @inlinable
     public var value: Int {
         Int(self.rawValue)
     }
