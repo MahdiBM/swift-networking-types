@@ -50,19 +50,17 @@ extension Port: CustomStringConvertible {
             | (UInt64(hundreds) << 16)
             | (UInt64(tens) << 24)
             | (UInt64(ones) << 32)
+        /// Let's ensure we don't write leading 0s.
+        /// We count trailing zeros because the bytes are written backwards.
+        /// `& ~0b111` makes sure the number is a multiple of 8 (masks off 3 trailing bits).
+        /// Essentially a `num - (num % 8)`.
+        let zeroDigitsBits = digits.trailingZeroBitCount & ~0b111
+        /// If all 5 digits are 0 (zeroDigitsBits >= 40; 64 actually) we still need to write 1 zero.
+        let zeroDigitsBitsMax32 = min(zeroDigitsBits, 32)
+
         /// Add `0x30` == ASCII `0` to each to make ASCII codes out of the numbers.
         let m30: UInt64 = 0x30_30_30_30_30
         let asciiBytes = digits &+ m30
-
-        /// Let's ensure we don't write leading 0s.
-        /// We count trailing zeros because the bytes are written backwards.
-        /// A leading zero is a trailing lane that is exactly `0x30`, so XORing out `m30` turns the
-        /// `0x30` lanes into trailing `0`s.
-        /// `& ~0b111` makes sure the number is a multiple of 8 (masks off 3 trailing bits).
-        /// Essentially a `num - (num % 8)`.
-        let zeroDigitsBits = (asciiBytes ^ m30).trailingZeroBitCount & ~0b111
-        /// If all 5 digits are 0 (zeroDigitsBits >= 40; 64 actually) we still need to write 1 zero.
-        let zeroDigitsBitsMax32 = min(zeroDigitsBits, 32)
         let toStore = asciiBytes &>> zeroDigitsBitsMax32
 
         /// Always store all 8 bytes, but only advance past the significant digits.
