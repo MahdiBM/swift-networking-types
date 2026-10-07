@@ -45,7 +45,7 @@ extension Port {
     }
 
     /// Initialize a `Port` from a null-terminated C string of its textual representation.
-    /// That is, at most 5 decimal digits amounting to a value of at most 65535.
+    /// That is, at most 5 decimal digits amounting to a value of at most 65535, terminated by a null byte.
     /// For example `"8080\0"` will parse into `Port(8080)`.
     ///
     /// This is useful for interoperability with C APIs that produce null-terminated strings.

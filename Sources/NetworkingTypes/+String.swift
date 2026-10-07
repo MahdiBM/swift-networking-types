@@ -94,7 +94,7 @@ extension Substring {
     }
 
     /// This function can only be reached on Darwin and only for some objc-bridged strings.
-    /// Therefore it's not worth inlining. As a matter of fact it's worth not inlining it at all.
+    /// Therefore it's not worth inlining. As a matter of fact it's worth forcing it to not inline.
     @usableFromInline
     @inline(never)
     func withSpan_Compatibility_SlowPath<T>(
