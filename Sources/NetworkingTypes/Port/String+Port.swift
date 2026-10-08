@@ -78,7 +78,7 @@ extension Port: CustomStringConvertible {
         let toStore = asciiBytes &>> zeroDigitsBitsMax32
 
         /// Always store all 8 bytes, but only advance past the significant digits.
-        unsafe buffer.storeBytes(of: toStore, toByteOffset: 0, as: UInt64.self)
+        unsafe buffer.storeBytes(of: toStore.littleEndian, toByteOffset: 0, as: UInt64.self)
 
         /// `zeroDigitsBitsMax32 >> 3` == `zeroDigitsBitsMax32 / 8`
         /// Compiler will optimize `/ 8` to a shift by 3 anyway so 🤷‍♂️.
