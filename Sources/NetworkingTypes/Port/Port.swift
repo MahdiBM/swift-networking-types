@@ -30,7 +30,7 @@ public struct Port: Sendable, Hashable, RawRepresentable {
     @inlinable
     public init(_ value: Int) {
         guard let rawValue = UInt16(exactly: value) else {
-            preconditionFailure("Port must be inclusively between 0 and 65535")
+            fatalError("Port must be inclusively between 0 and 65535")
         }
         self.rawValue = rawValue
     }

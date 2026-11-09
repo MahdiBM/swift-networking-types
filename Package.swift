@@ -25,7 +25,6 @@ let package = Package(
 
 var swiftSettings: [SwiftSetting] {
     [
-        .swiftLanguageMode(.v6),
         .strictMemorySafety(),
         .enableUpcomingFeature("ApproachableConcurrency"),
         .enableUpcomingFeature("MemberImportVisibility"),
