@@ -15,16 +15,40 @@ import Testing
 
 @Suite
 struct PortTests {
-    @Test func port() {
-        #expect(Port(0) == Port(rawValue: 0))
-        #expect(Port(81) == Port(rawValue: 81))
-        #expect(Port(443) == Port(rawValue: 443))
-        #expect(Port(5353) == Port(rawValue: 5353))
-        #expect(Port(18610) == Port(rawValue: 18610))
-        #expect(Port(65535) == Port(rawValue: 65535))
+    @Test(arguments: PortTestCase.allCases)
+    func `Port initializers work correctly`(testCase: PortTestCase) {
+        guard let testCaseValue = testCase.value else { return }
+
+        let port = Port(rawValue: testCaseValue.littleEndian)
+        #expect(port.rawValue == testCaseValue.littleEndian)
     }
 
-    @Test func `Port description and parsing work as expected`() {
+    @available(anyAppleOS 27.0, *)
+    @Test(arguments: PortTestCase.allCases)
+    func `Port byte-order initializers work correctly`(testCase: PortTestCase) {
+        guard let testCaseValue = testCase.value else { return }
+
+        let littleEndian = Port(rawValue: testCaseValue.littleEndian)
+        let littleEndian2 = Port(integerLiteral: testCaseValue.littleEndian)
+        let littleEndian3 = Port(rawValue: testCaseValue.littleEndian, byteOrder: .littleEndian)
+        let bigEndian = Port(rawValue: testCaseValue.bigEndian, byteOrder: .bigEndian)
+        let plainInt = Port(Int(testCaseValue.littleEndian))
+
+        #expect(littleEndian == littleEndian2)
+        #expect(littleEndian == littleEndian3)
+        #expect(littleEndian == bigEndian)
+        #expect(littleEndian == plainInt)
+    }
+
+    @Test(arguments: PortTestCase.allCases)
+    func `Port description and parsing work as expected`(testCase: PortTestCase) {
+        let port1 = Port(testCase.description)
+        let port2 = Port(Substring(testCase.description))
+        #expect(port1?.description == testCase.expectedDescription)
+        #expect(port2?.description == testCase.expectedDescription)
+    }
+
+    @Test func `Exhaustive Port description and parsing`() {
         for number in UInt16.min...UInt16.max {
             let port = Port(rawValue: number)
             let description = port.description
@@ -32,57 +56,6 @@ struct PortTests {
             #expect(Port(description) == port)
             #expect(Port(Substring(description)) == port)
         }
-    }
-
-    @Test(
-        arguments: [String]([
-            "",
-            " ",
-            "-1",
-            "65536",
-            "99999",
-            "123456",
-            "0x10",
-            "80 ",
-            " 80",
-            "8_0",
-            "8.0",
-            "/",
-            ":",
-            ";",
-            "/80",
-            "80:",
-            "8:0",
-            "1/2",
-            ":6553",
-            "6553:",
-            "٨٠",
-        ])
-    )
-    func `Port rejects invalid textual representations`(description: String) {
-        #expect(Port(description) == nil)
-        #expect(Port(Substring(description)) == nil)
-    }
-
-    @Test(
-        arguments: [(description: String, port: Port)]([
-            (description: "0", port: 0),
-            (description: "00", port: 0),
-            (description: "000", port: 0),
-            (description: "0000", port: 0),
-            (description: "00000", port: 0),
-            (description: "01", port: 1),
-            (description: "080", port: 80),
-            (description: "00080", port: 80),
-            (description: "00443", port: 443),
-            (description: "065535", port: 65535),
-            (description: "000000", port: 0),
-            (description: "0065535", port: 65535),
-        ])
-    )
-    func `Port tolerates leading zeros`(description: String, port: Port) {
-        #expect(Port(description) == port)
-        #expect(Port(Substring(description)) == port)
     }
 }
 
@@ -104,3 +77,55 @@ extension PortTests {
     }
 }
 #endif
+
+struct PortTestCase {
+    struct Value {
+        let littleEndian: UInt16
+        let bigEndian: UInt16
+
+        init(nativeEndian: UInt16) {
+            self.littleEndian = nativeEndian.littleEndian
+            self.bigEndian = nativeEndian.bigEndian
+        }
+    }
+
+    let description: String
+    let expectedDescription: String?
+    let value: Value?
+
+    init(_ description: String, expectedDescription: String? = nil, _ value: Value?) {
+        self.description = description
+        self.value = value
+        if let expectedDescription {
+            self.expectedDescription = expectedDescription
+        } else if value == nil {
+            self.expectedDescription = nil
+        } else {
+            self.expectedDescription = description
+        }
+    }
+
+    static let invalidCases: [PortTestCase] = [
+        "", " ", "-1", "65536", "111111", "99999", "123456", "0x10", "80 ", " 80", "8_0",
+        "8.0", "/", ":", ";", "/80", "80:", "8:0", "1/2", ":6553", "6553:", "٨٠",
+    ].map { PortTestCase($0, nil) }
+
+    static let validCases: [PortTestCase] = [
+        PortTestCase("0", Value(nativeEndian: 0)),
+        PortTestCase("00", expectedDescription: "0", Value(nativeEndian: 0)),
+        PortTestCase("000", expectedDescription: "0", Value(nativeEndian: 0)),
+        PortTestCase("0000", expectedDescription: "0", Value(nativeEndian: 0)),
+        PortTestCase("00000", expectedDescription: "0", Value(nativeEndian: 0)),
+        PortTestCase("000000", expectedDescription: "0", Value(nativeEndian: 0)),
+        PortTestCase("7", Value(nativeEndian: 7)),
+        PortTestCase("80", Value(nativeEndian: 80)),
+        PortTestCase("443", Value(nativeEndian: 443)),
+        PortTestCase("5353", Value(nativeEndian: 5353)),
+        PortTestCase("65535", Value(nativeEndian: 65535)),
+        PortTestCase("065535", expectedDescription: "65535", Value(nativeEndian: 65535)),
+    ]
+
+    static var allCases: [PortTestCase] {
+        invalidCases + validCases
+    }
+}
