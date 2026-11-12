@@ -15,23 +15,15 @@ import Testing
 
 @Suite
 struct PortTests {
-    @Test(arguments: PortTestCase.allCases)
-    func `Port initializers work correctly`(testCase: PortTestCase) {
-        guard let testCaseValue = testCase.value else { return }
-
-        let port = Port(rawValue: testCaseValue.littleEndian)
-        #expect(port.rawValue == testCaseValue.littleEndian)
-    }
-
     @available(anyAppleOS 27.0, *)
     @Test(arguments: PortTestCase.allCases)
     func `Port byte-order initializers work correctly`(testCase: PortTestCase) {
         guard let testCaseValue = testCase.value else { return }
 
-        let littleEndian = Port(rawValue: testCaseValue.littleEndian)
+        let littleEndian = Port(numericValue: testCaseValue.littleEndian)
         let littleEndian2 = Port(integerLiteral: testCaseValue.littleEndian)
-        let littleEndian3 = Port(rawValue: testCaseValue.littleEndian, byteOrder: .littleEndian)
-        let bigEndian = Port(rawValue: testCaseValue.bigEndian, byteOrder: .bigEndian)
+        let littleEndian3 = Port(numericValue: testCaseValue.littleEndian, byteOrder: .littleEndian)
+        let bigEndian = Port(numericValue: testCaseValue.bigEndian, byteOrder: .bigEndian)
         let plainInt = Port(Int(testCaseValue.littleEndian))
 
         #expect(littleEndian == littleEndian2)
@@ -48,9 +40,10 @@ struct PortTests {
         #expect(port2?.description == testCase.expectedDescription)
     }
 
+    @available(anyAppleOS 27.0, *)
     @Test func `Exhaustive Port description and parsing`() {
         for number in UInt16.min...UInt16.max {
-            let port = Port(rawValue: number)
+            let port = Port(numericValue: number)
             let description = port.description
             #expect(description == String(number))
             #expect(Port(description) == port)

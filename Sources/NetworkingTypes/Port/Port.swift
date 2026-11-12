@@ -15,18 +15,9 @@
 /// Port numbers are 16-bit values, inclusively between 0 and 65535, as defined in [IETF RFC 6335].
 ///
 /// [IETF RFC 6335]: https://datatracker.ietf.org/doc/html/rfc6335
-public struct Port: Sendable, Hashable, RawRepresentable {
+public struct Port: Sendable, Hashable {
     /// The canonical value of the port.
     public var rawValue: UInt16
-
-    /// Create a new port with the given canonical rawValue.
-    ///
-    /// - Parameters:
-    ///   - rawValue: The integer to create the port from.
-    @inlinable
-    public init(rawValue: UInt16) {
-        self.rawValue = rawValue
-    }
 
     /// Create a new port with the given value and byte order.
     ///
@@ -35,11 +26,11 @@ public struct Port: Sendable, Hashable, RawRepresentable {
     ///   - byteOrder: The byte order of the integer.
     @inlinable
     @available(anyAppleOS 27.0, *)
-    public init(rawValue: UInt16, byteOrder: ByteOrder) {
+    public init(numericValue: UInt16, byteOrder: ByteOrder = .native) {
         self.rawValue =
             switch byteOrder {
-            case .bigEndian: rawValue.bigEndian
-            case .littleEndian: rawValue.littleEndian
+            case .bigEndian: numericValue.bigEndian
+            case .littleEndian: numericValue.littleEndian
             }
     }
 
@@ -65,7 +56,7 @@ extension Port: ExpressibleByIntegerLiteral {
     ///   - integerLiteral: The integer to create the port from.
     @inlinable
     public init(integerLiteral value: UInt16) {
-        self.init(rawValue: value)
+        self.rawValue = value
     }
 }
 
@@ -90,6 +81,6 @@ extension Port: LosslessStringConvertible {
         guard let value = UInt16(description) else {
             return nil
         }
-        self.init(rawValue: value)
+        self.rawValue = value
     }
 }
